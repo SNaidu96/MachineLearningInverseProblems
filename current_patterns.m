@@ -5,7 +5,9 @@ function [T,T_k] = current_patterns()
     a = pi^(-0.5);
 
     theta = 2*pi*([1:16]/16);
-    theta=theta/2;
+    %theta = [2*pi * (1:8) ./ 16,2*pi * (-1:-1:-8) ./ 16]
+    
+    theta=theta/4;
  
     for n=1:16
        for l=1:16
@@ -25,9 +27,13 @@ function [T,T_k] = current_patterns()
         
     end
 
-
-
-    clearvars -except T_k T
+% % 
+% figure; hold on;
+% for i=1:16
+% subplot(4,4,i);
+% 
+% plot(T(:,i))
+% title(num2str(i));
 
 
 

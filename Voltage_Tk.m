@@ -1,22 +1,23 @@
- function [Voltages,results] = Voltage_Tk(model,T_k)
+function [Voltages,results] = Voltage_Tk(model,T_k,tensor)
 Voltages = zeros(16);
-%figure;
+% figure;
 % hold on; xlim([-1,1]); ylim([-1,1]);
+%16 injection patterns, so we solve the pde repeatedly 16 times
     for row = 1:16
-      
+        %Apply dirichlet boundary condition
         applyBoundaryCondition(model,"dirichlet",'Edge',1:4,'h',1,'r',@t_k_func);
         generateMesh(model); %Suggested for 2D 
-        results=solvepde(model);
-        % plot resulting voltage for differnet patterns 
+        results=solvepde(model); %results of solved PDE
+        % %plot resulting voltage for differnet patterns 
         subplot(4,4,row);
-
         pdeplot(model,'XYData',results.NodalSolution,'Contour','on','ColorBar','on','ColorMap','jet'); hold on;
         pdegplot(model); %View Inc 
         title(sprintf('Injection %d',row));
-        Voltages(:,row) = VNodes(results); %Voltage at center of electrode
+        Voltages(:,row) = VNodes(results,tensor); %Find Voltage at center of electrode
     end
     
     function t = t_k_func(region,state)   
+        % Apply trigonometirc basic voltage around boundary
     % Compute angle
         theta = atan2d(region.y,region.x);
        % plot(region.x,region.y,'ok'); hold on

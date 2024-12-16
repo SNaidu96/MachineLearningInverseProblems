@@ -1,28 +1,29 @@
 
 function [FCNNSpecs] = DatasetGeneration(points)
-    %FCNNSpecs=BrainSpecs(points); %Generate Conductivity and Thickness
+%%Initialise data structures
     FCNNSpecs=struct.empty(points,0);
     [T,T_k] = current_patterns();
+    %Generate Object Geometry 
     FCNNSpecs = GeometryGeneration(FCNNSpecs);
-   for i=1:points
-        [FCNNSpecs(i).Voltages,FCNNSpecs(i).Results] = PDEConditions1(FCNNSpecs(i),T_k);
-        FCNNSpecs(i).Cur = T_k; 
-        V_k = FCNNSpecs(i).Voltages;
-        FCNNSpecs(i).ND = N_DMatrix(T,V_k); %Get ND Matrix   
-        FCNNSpecs(i).Label = 0;
-        FCNNSpecs(i).NoisyND = FCNNSpecs(i).ND + 0.01*randn(16);
-        clc,i
+     %change to  
+    %FCNNSpecs = GeometryGeneration_MultInc(FCNNSpecs); %for
+    % multiple inclusions
+    for i=1:points
+        %Solve the PDE for the generated domain
+        [FCNNSpecs(i).CurrentDensity,FCNNSpecs(i).Results,tensor] = PDEConditions1(FCNNSpecs(i),T_k);
+        FCNNSpecs(i).Vol = T_k; 
+        V_k = FCNNSpecs(i).CurrentDensity;
+        %Calculate the DN Matrix
+        FCNNSpecs(i).DN = D_NMatrix(T,V_k); %Get DN Matrix  
+        %Add noise 
+        FCNNSpecs(i).NoisyDN = FCNNSpecs(i).DN + 0.01*randn(16);
+        %Add data label for classification output
+        FCNNSpecs(i).Label=0;
+        %FCNNSpecs(i).Mu=tensor(1);
+
     end
-     %clearvars all -except FCNNSpecs  
-     %save('IsoDataIsoInc.mat', "FCNNSpecs",'-mat')
+     %Clear Workspace and save resuting data in .MAT file.
+     clearvars all -except FCNNSpecs  
+     save('FileName.mat', "FCNNSpecs",'-mat')
      % 
 end
-
-%%% Uncomment to plot
-%This plots the 100th stroke postion and radius, change index for more. 
-% g=s(1000).GeometryObject
-% geometryFromEdges(model,g);
-% delete(model.Geometry)
-% model.Geometry = []
-% geometryFromEdges(model,g)
-% pdegplot(model,'EdgeLabels','on')
